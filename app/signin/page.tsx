@@ -1,9 +1,27 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, Github, Mail } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signinSchema, SigninFormValues } from "@/lib/validations/auth";
 
 const Signin = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SigninFormValues>({
+    resolver: zodResolver(signinSchema),
+  });
+
+  const onSubmit = (data: SigninFormValues) => {
+    console.log(data);
+  };
+
   return (
     <div className="w-full min-h-screen flex">
       <div className="hidden lg:flex w-1/2 relative bg-zinc-900">
@@ -51,7 +69,7 @@ const Signin = () => {
           </div>
 
           <div className="grid gap-6">
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <Input
                 label="Email"
                 id="email"
@@ -60,19 +78,20 @@ const Signin = () => {
                 autoCapitalize="none"
                 autoComplete="email"
                 autoCorrect="off"
+                error={errors.email?.message}
+                {...register("email")}
               />
               <Input
                 label="Password"
                 id="password"
                 type="password"
                 autoComplete="current-password"
+                error={errors.password?.message}
+                {...register("password")}
               />
-              <button
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-10 px-4 py-2 w-full"
-                type="submit"
-              >
-                Sign In with Email
-              </button>
+              <Button className="w-full" type="submit">
+                Sign In
+              </Button>
             </form>
           </div>
         </div>
