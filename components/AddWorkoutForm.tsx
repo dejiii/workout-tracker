@@ -7,6 +7,7 @@ import { workoutSchema, WorkoutFormValues } from "@/lib/validations/workout";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
+import { useAddWorkout } from "@/hooks/api/workouts/useAddWorkout";
 
 interface AddWorkoutFormProps {
   onSuccess: (data: WorkoutFormValues) => void;
@@ -19,10 +20,11 @@ const AddWorkoutForm: React.FC<AddWorkoutFormProps> = ({
   onCancel,
   initialDate,
 }) => {
+  const { mutate: addWorkout, isPending } = useAddWorkout();
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(workoutSchema),
     defaultValues: {
@@ -36,7 +38,11 @@ const AddWorkoutForm: React.FC<AddWorkoutFormProps> = ({
   });
 
   const onSubmit = (data: WorkoutFormValues) => {
-    onSuccess(data);
+    addWorkout(data, {
+      onSuccess: () => {
+        onSuccess(data);
+      },
+    });
   };
 
   return (
@@ -79,12 +85,12 @@ const AddWorkoutForm: React.FC<AddWorkoutFormProps> = ({
           type="button"
           variant="outline"
           onClick={onCancel}
-          disabled={isSubmitting}
+          disabled={isPending}
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          Save Workout
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Saving..." : "Save Workout"}
         </Button>
       </div>
     </form>

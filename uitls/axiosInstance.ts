@@ -4,7 +4,8 @@ import { toast } from "react-hot-toast";
 const baseURL = process.env.NEXT_PUBLIC_PROD_BACKEND_URL;
 
 export const axiosInstance = axios.create({
-  baseURL: baseURL,
+  // baseURL: baseURL,
+  baseURL: "http://localhost:3000/api/",
 });
 
 axiosInstance.interceptors.request.use(

@@ -4,29 +4,29 @@ import type { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
-type LoginPayload = {
+type SignUpPayload = {
   email: string;
   password: string;
 };
 
-type LoginResponse = {
+type SignUpResponse = {
   token: string;
   name: string;
   id: string;
   email: string;
 };
 
-type LoginError = {
+type SignUpError = {
   token: string;
 };
 
-export const useLogin = () => {
+export const useSignUpUser = () => {
   const router = useRouter();
 
-  return useMutation<LoginResponse, AxiosError<LoginError>, LoginPayload>({
+  return useMutation<SignUpResponse, AxiosError<SignUpError>, SignUpPayload>({
     mutationFn: async (payload) => {
-      const { data } = await axiosInstance.post<LoginResponse>(
-        "/auth/signin/",
+      const { data } = await axiosInstance.post<SignUpResponse>(
+        "/auth/signup/",
         payload
       );
       return data;
@@ -43,14 +43,14 @@ export const useLogin = () => {
 
         setTimeout(() => {
           router.push("/");
-          toast.success("Login successful");
+          toast.success("Sign up successful");
         }, 1500);
       }
     },
 
     onError: (error) => {
       const errorMessage =
-        (error.response?.data as LoginError)?.token || "Login failed";
+        (error.response?.data as SignUpError)?.token || "Sign up failed";
       toast.error(errorMessage);
     },
   });

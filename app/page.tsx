@@ -4,12 +4,14 @@ import React, { useState, useMemo } from "react";
 import { Calendar, momentLocalizer, View, Views } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { Plus } from "lucide-react";
+import { Dumbbell, LogOut, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import AddWorkoutForm from "@/components/AddWorkoutForm";
-import { Workout, WorkoutFormValues } from "@/types";
-import { v4 as uuidv4 } from "uuid";
+import { Workout } from "@/types";
+import { useGetAllWorkouts } from "@/hooks/api/workouts/useGetWorkouts";
+import { useLogout } from "@/hooks/api/auth/useLogoutUser";
+import { useWorkoutCalendar } from "@/hooks/useWorkoutCalendar";
 
 const localizer = momentLocalizer(moment);
 
@@ -21,93 +23,73 @@ interface CalendarEvent {
   resource: Workout;
 }
 
-const INITIAL_WORKOUTS: Workout[] = [
-  {
-    id: "1",
-    type: "Running",
-    duration: 30,
-    date: new Date(),
-    notes: "Easy morning run",
-  },
-];
-
 export default function Home() {
-  const [workouts, setWorkouts] = useState<Workout[]>(INITIAL_WORKOUTS);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [view, setView] = useState<View>(Views.MONTH);
-
-  const events = useMemo(() => {
-    return workouts
-      .map((workout) => {
-        const start = new Date(workout.date);
-        if (isNaN(start.getTime())) return null;
-
-        const end = moment(start).add(workout.duration, "minutes").toDate();
-
-        return {
-          id: workout.id,
-          title: `${workout.type} (${workout.duration}m)`,
-          start,
-          end,
-          resource: workout,
-        };
-      })
-      .filter((event): event is CalendarEvent => event !== null);
-  }, [workouts]);
-
-  const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
-    setSelectedDate(slotInfo.start);
-    setIsModalOpen(true);
-  };
-
-  const handleAddWorkout = (data: WorkoutFormValues) => {
-    const newWorkout: Workout = {
-      id: uuidv4(),
-      type: data.type,
-      duration: data.duration,
-      date: new Date(data.date),
-      notes: data.notes,
-    };
-
-    setWorkouts((prev) => [...prev, newWorkout]);
-    setIsModalOpen(false);
-  };
+  const {
+    workouts,
+    events,
+    isModalOpen,
+    setIsModalOpen,
+    selectedDate,
+    setSelectedDate,
+    view,
+    setView,
+    handleSelectSlot,
+    handleAddWorkout,
+    logout,
+    isLoading,
+  } = useWorkoutCalendar();
 
   return (
     <div className="flex flex-col h-screen bg-zinc-50">
       <header className="bg-white border-b border-zinc-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-2">
-          {/* Add logo or title here if needed */}
-          <h1 className="text-xl font-bold text-zinc-900">Workout Tracker</h1>
+          <div className="flex items-center gap-2 text-black font-medium text-lg">
+            <Dumbbell className="h-6 w-6" />
+            <span>Workout Tracker</span>
+          </div>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Workout
+        <Button onClick={() => logout()} variant="destructive">
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
         </Button>
       </header>
 
       <main className="flex-1 p-6 overflow-hidden">
-        <div className="h-full bg-white rounded-lg shadow-sm border border-zinc-200 p-4">
-          <Calendar<CalendarEvent>
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: "100%" }}
-            selectable
-            onSelectSlot={handleSelectSlot}
-            views={["month", "week", "day", "agenda"]}
-            view={view}
-            onView={setView}
-            date={selectedDate}
-            onNavigate={setSelectedDate}
-            eventPropGetter={(event) => ({
-              className:
-                "bg-zinc-900 text-white rounded-md border-none text-xs",
-            })}
-          />
+        <div className="flex justify-between items-center mb-4">
+          <h3>Total: {workouts.length} workouts</h3>
+
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Workout
+          </Button>
         </div>
+
+        {isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
+          </div>
+        ) : (
+          <div className="h-full bg-white rounded-lg shadow-sm border border-zinc-200 p-4">
+            <Calendar<CalendarEvent>
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: "100%" }}
+              selectable
+              onSelectSlot={handleSelectSlot}
+              views={["month", "week", "day", "agenda"]}
+              view={view}
+              onView={setView}
+              date={selectedDate}
+              onNavigate={setSelectedDate}
+              eventPropGetter={(event) => ({
+                className:
+                  "bg-zinc-900 text-white rounded-md border-none text-xs",
+              })}
+            />
+          </div>
+        )}
       </main>
 
       <Modal
