@@ -5,9 +5,9 @@ import { toast } from "react-hot-toast";
 import { queryClient } from "@/services/queryClient";
 import { axiosInstance } from "@/uitls/axiosInstance";
 
-export const useDeleteAWorkout = (id: string) => {
+export const useDeleteAWorkout = () => {
   return useMutation<void, AxiosError<unknown>, string>({
-    mutationFn: async () => {
+    mutationFn: async (id) => {
       await axiosInstance.delete(`/workouts/${id}`);
     },
     onSuccess: () => {

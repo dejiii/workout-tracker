@@ -38,11 +38,17 @@ const AddWorkoutForm: React.FC<AddWorkoutFormProps> = ({
   });
 
   const onSubmit = (data: WorkoutFormValues) => {
-    addWorkout(data, {
-      onSuccess: () => {
-        onSuccess(data);
+    addWorkout(
+      {
+        ...data,
+        date: new Date(data.date),
       },
-    });
+      {
+        onSuccess: () => {
+          onSuccess(data);
+        },
+      }
+    );
   };
 
   return (

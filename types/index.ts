@@ -1,7 +1,7 @@
 export * from "@/lib/validations/auth";
 
 export interface Workout {
-  id: string;
+  _id: string;
   type: string;
   duration: number;
   date: Date;
@@ -36,7 +36,7 @@ export interface GetAllWorkoutsResponse {
 export interface CreateWorkoutPayload {
   type: string;
   duration: number;
-  date: string;
+  date: Date;
   notes?: string;
 }
 

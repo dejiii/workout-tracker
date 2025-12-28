@@ -1,108 +1,144 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Calendar, momentLocalizer, View, Views } from "react-big-calendar";
+import React from "react";
+import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Dumbbell, LogOut, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import AddWorkoutForm from "@/components/AddWorkoutForm";
-import { Workout } from "@/types";
-import { useGetAllWorkouts } from "@/hooks/api/workouts/useGetWorkouts";
-import { useLogout } from "@/hooks/api/auth/useLogoutUser";
+import AddWorkoutForm from "@/components/forms/AddWorkoutForm";
+import EditWorkoutModal from "@/components/forms/EditWorkoutModal";
+import { CalendarEvent } from "@/types";
 import { useWorkoutCalendar } from "@/hooks/useWorkoutCalendar";
 
 const localizer = momentLocalizer(moment);
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  resource: Workout;
-}
-
 export default function Home() {
   const {
-    workouts,
     events,
     isModalOpen,
     setIsModalOpen,
+    isEditModalOpen,
+    setIsEditModalOpen,
     selectedDate,
     setSelectedDate,
+    selectedEvent,
     view,
     setView,
     handleSelectSlot,
+    handleSelectEvent,
     handleAddWorkout,
     logout,
     isLoading,
   } = useWorkoutCalendar();
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-50">
-      <header className="bg-white border-b border-zinc-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 text-black font-medium text-lg">
-            <Dumbbell className="h-6 w-6" />
-            <span>Workout Tracker</span>
-          </div>
+    <div className="flex h-screen bg-zinc-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-zinc-900 text-white p-6 flex flex-col hidden md:flex">
+        <div className="flex items-center gap-2 font-bold text-xl mb-10">
+          <Dumbbell className="h-6 w-6 text-emerald-400" />
+          <span>FitTrack</span>
         </div>
-        <Button onClick={() => logout()} variant="destructive">
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </Button>
-      </header>
 
-      <main className="flex-1 p-6 overflow-hidden">
-        <div className="flex justify-between items-center mb-4">
-          <h3>Total: {workouts.length} workouts</h3>
+        <nav className="flex-1 space-y-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-zinc-300 hover:text-white hover:bg-zinc-800"
+          >
+            Dashboard
+          </Button>
+          <Button
+            variant="ghost"
+            disabled
+            className="w-full justify-start text-zinc-300 hover:text-white hover:bg-zinc-800"
+          >
+            Workouts
+          </Button>
+          <Button
+            variant="ghost"
+            disabled
+            className="w-full justify-start text-zinc-300 hover:text-white hover:bg-zinc-800"
+          >
+            Analytics
+          </Button>
+        </nav>
 
-          <Button onClick={() => setIsModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Workout
+        <div className="pt-6 border-t border-zinc-800">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-zinc-300 hover:text-white hover:bg-zinc-800 gap-2"
+            onClick={() => logout()}
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
           </Button>
         </div>
+      </aside>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="h-16 bg-white border-b border-zinc-200 flex items-center justify-between px-8 flex-shrink-0">
+          <h1 className="text-xl font-semibold text-zinc-900">
+            Workout Calendar
+          </h1>
+          <div className="flex items-center gap-4">
+            <Button onClick={() => setIsModalOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Log Workout
+            </Button>
           </div>
-        ) : (
-          <div className="h-full bg-white rounded-lg shadow-sm border border-zinc-200 p-4">
-            <Calendar<CalendarEvent>
-              localizer={localizer}
-              events={events}
-              startAccessor="start"
-              endAccessor="end"
-              style={{ height: "100%" }}
-              selectable
-              onSelectSlot={handleSelectSlot}
-              views={["month", "week", "day", "agenda"]}
-              view={view}
-              onView={setView}
-              date={selectedDate}
-              onNavigate={setSelectedDate}
-              eventPropGetter={(event) => ({
-                className:
-                  "bg-zinc-900 text-white rounded-md border-none text-xs",
-              })}
-            />
+        </header>
+
+        <div className="flex-1 p-8 overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm border border-zinc-200 h-full p-4">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900"></div>
+              </div>
+            ) : (
+              <Calendar<CalendarEvent>
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: "100%" }}
+                selectable
+                onSelectSlot={handleSelectSlot}
+                onSelectEvent={handleSelectEvent}
+                views={["month", "week", "day", "agenda"]}
+                view={view}
+                onView={setView}
+                date={selectedDate}
+                onNavigate={setSelectedDate}
+                eventPropGetter={(event) => ({
+                  className:
+                    "bg-zinc-900 text-white rounded-md border-none text-xs",
+                })}
+              />
+            )}
           </div>
-        )}
+        </div>
       </main>
 
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Record Workout"
+        title="Log Workout"
       >
         <AddWorkoutForm
+          initialDate={selectedDate}
           onSuccess={handleAddWorkout}
           onCancel={() => setIsModalOpen(false)}
-          initialDate={selectedDate}
         />
       </Modal>
+
+      <EditWorkoutModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        event={selectedEvent}
+      />
     </div>
   );
 }

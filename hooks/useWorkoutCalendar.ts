@@ -13,7 +13,11 @@ export const useWorkoutCalendar = () => {
 
   const workouts = data?.workouts || [];
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null
+  );
   const [view, setView] = useState<View>(Views.MONTH);
 
   const events = useMemo(() => {
@@ -25,7 +29,7 @@ export const useWorkoutCalendar = () => {
         const end = moment(start).add(workout.duration, "minutes").toDate();
 
         return {
-          id: workout.id,
+          id: workout._id,
           title: `${workout.type} (${workout.duration}m)`,
           start,
           end,
@@ -40,6 +44,11 @@ export const useWorkoutCalendar = () => {
     setIsModalOpen(true);
   };
 
+  const handleSelectEvent = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
   const handleAddWorkout = () => {
     setIsModalOpen(false);
   };
@@ -51,11 +60,15 @@ export const useWorkoutCalendar = () => {
     events,
     isModalOpen,
     setIsModalOpen,
+    isEditModalOpen,
+    setIsEditModalOpen,
     selectedDate,
     setSelectedDate,
+    selectedEvent,
     view,
     setView,
     handleSelectSlot,
+    handleSelectEvent,
     handleAddWorkout,
     logout,
     isLoading,
